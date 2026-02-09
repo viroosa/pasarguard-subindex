@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} - Bmaarz پنل کاربری</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #00d9ff;
+            --primary-dark: #00a8cc;
+            --secondary: #9d4edd;
+            --dark: #0a0a14;
+            --darker: #050510;
+            --card: rgba(20, 25, 40, 0.65);
+            --glass: rgba(255,255,255,0.06);
+            --text: #f0f4ff;
+            --text-sec: #a0a0c0;
+            --success: #00ff9d;
+            --warning: #ffaa00;
+            --radius: 18px;
+            --glow: 0 0 28px rgba(0, 217, 255, 0.25);
+            --transition: all 0.35s ease;
+        }
+        
+        /* اصلاح پس‌زمینه کلی برای حذف هرگونه نوار سفید */
+        html, body {
+            background-color: #050510; /* رنگ مشکی عمیق */
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* اصلاح استایل نوار پایین صفحه */
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 9999;
+            /* حذف هرگونه سایه یا پس‌زمینه اضافی */
+            background: transparent; 
+        }
+
+        .bottom-nav {
+            pointer-events: auto;
+            width: 92%;
+            max-width: 450px;
+            /* استفاده از رنگ تیره شیشه‌ای هماهنگ با کارت‌ها */
+            background: rgba(15, 20, 35, 0.9); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            /* حاشیه ظریف آبی برای حذف تضاد با محیط */
+            border: 1px solid rgba(0, 217, 255, 0.15); 
+            border-radius: 25px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 10px;
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        /* افکت کلیک روی آیتم‌های منو */
+        .nav-item {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #a0a0c0;
+            transition: all 0.3s ease;
+            flex: 1;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-item:active {
+            transform: scale(0.92);
+        }
+
+        /* حذف حاشیه احتمالی در گوشی‌های آیفون */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .bottom-nav {
+                margin-bottom: calc(20px + env(safe-area-inset-bottom));
+            }
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #050510 0%, #0a0a14 100%);
+            color: var(--text);
+            min-height: 100vh;
+            background-attachment: fixed;
+            overflow-x: hidden;
+            padding-bottom: 120px;
+        }
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0,217,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,217,255,0.08) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: perspective(600px) rotateX(65deg);
+            animation: gridFlow 50s linear infinite;
+        }
+        .float-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.12;
+            z-index: -1;
+        }
+        .float-glow:nth-child(1) { width:400px; height:400px; top:15%; left:8%; background: radial-gradient(circle, var(--primary), transparent); }
+        .float-glow:nth-child(2) { width:320px; height:320px; bottom:18%; right:12%; background: radial-gradient(circle, var(--secondary), transparent); }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 12px 16px; position: relative; z-index: 1; }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(15,20,35,0.7);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius);
+            border: 1px solid rgba(0,217,255,0.18);
+            margin-bottom: 24px;
+            box-shadow: var(--glow);
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-img { width: 32px; height: 32px; object-fit: contain; }
+        .logo span { 
+            font-size: 1.2rem; 
+            font-weight: 700; 
+            letter-spacing: -0.5px; 
+            background: linear-gradient(90deg, var(--primary), var(--secondary)); 
+            -webkit-background-clip: text; 
+            color: transparent; 
+        }
+
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--glow); }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title i { color: var(--primary); }
+
+        .usage-container {
+            margin: 20px 0 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .usage-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: var(--text-sec);
+        }
+        .progress-bar {
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 10px var(--primary);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .active { background: rgba(0,255,157,0.1); color: var(--success); border: 1px solid rgba(0,255,157,0.3); }
+        .expired  { background: rgba(255,100,100,0.1); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+        .dot { width:8px; height:8px; border-radius:50%; background: currentColor; animation: pulse 2s infinite; }
+
+        .user-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 15px 0; }
+        .stat-box {
+            background: rgba(0,0,0,0.25);
+            padding: 12px 10px;
+            border-radius: 14px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .stat-big {
+            font-size: 1.15rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.1;
+        }
+        .stat-small { font-size: 0.8rem; color: var(--text-sec); margin-top: 4px; }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(0,217,255,0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        .link-wrapper { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .link-text { font-family: monospace; font-size: 0.85rem; color: #d0e0ff; }
+        
+        .btn-copy, .btn-qr {
+            background: var(--primary);
+            color: #000; border: none; padding: 6px 12px; border-radius: 8px;
+            cursor: pointer; font-weight: 600; transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif; font-size: 0.85rem;
+            position: relative; z-index: 5;
+        }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+        .tab-btn {
+            flex: 1 0 calc(33.33% - 6px); padding: 8px 10px; border-radius: 10px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+            cursor: pointer; transition: all 0.3s; color: var(--text);
+            font-family: 'Vazirmatn', sans-serif; font-size: 0.85rem; text-align: center;
+        }
+        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #000; border: none; }
+        
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; }
+        .app-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 15px 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .app-icon { width: 40px; height: 40px; border-radius: 10px; margin: 0 auto 10px; }
+        .app-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; }
+        
+        .app-actions { display: flex; gap: 6px; width: 100%; }
+        .app-btn {
+            flex: 1; padding: 8px 4px; border-radius: 8px; font-size: 0.75rem;
+            cursor: pointer; border: none; font-weight: 600;
+            font-family: 'Vazirmatn', sans-serif; transition: var(--transition);
+        }
+
+        .username-box {
+            background: rgba(0,0,0,0.25); padding: 10px; border-radius: 14px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 15px; font-size: 1.2rem; font-weight: 600;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(10, 15, 30, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--success);
+            padding: 8px 18px;
+            border-radius: 50px;
+            color: var(--success);
+            font-weight: 500;
+            font-size: 0.8rem;
+            z-index: 10001;
+            transition: all 0.3s ease;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0, 255, 157, 0.2);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #toast.show { display: flex; transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        #qrPopup {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center; z-index: 10005;
+        }
+        .qr-inner {
+            background: #ffffff; border-radius: var(--radius); padding: 32px 24px 24px;
+            text-align: center; max-width: 320px; width: 85%; position: relative;
+        }
+        .close-qr-btn {
+            position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%;
+            background: #f44336; color: white; border: none; cursor: pointer;
+        }
+
+        .copy-all-btn {
+            width: 100%; margin-top: 16px; padding: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #000; border: none; border-radius: 12px; font-weight: 700;
+            cursor: pointer; font-family: 'Vazirmatn', sans-serif;
+            position: relative; z-index: 5;
+        }
+
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .bottom-nav {
+            pointer-events: auto;
+            width: 90%;
+            max-width: 450px;
+            background: rgba(15, 20, 35, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 25px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            margin-bottom: 20px;
+        }
+        .nav-item {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-sec);
+            transition: var(--transition);
+            flex: 1;
+        }
+        .nav-item i { font-size: 1.3rem; }
+        .nav-item span { font-size: 0.7rem; font-weight: 600; }
+        .nav-item:hover { color: var(--primary); }
+        .nav-item.bot i { color: #0088cc; }
+        .nav-item.channel i { color: #22a6ff; }
+        .nav-item.support i { color: var(--success); }
+
+        @keyframes gridFlow { 0% { transform: perspective(600px) rotateX(65deg) translateY(0); } 100% { transform: perspective(600px) rotateX(65deg) translateY(-120px); } }
+        @keyframes pulse { 0%,100% {opacity:1;} 50% {opacity:0.4;} }
+
+        @media (max-width: 480px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .user-stats { grid-template-columns: 1fr 1fr; }
+            .stat-box:last-child { grid-column: span 2; }
+        }
+		
+		/* ================= LIGHT THEME OVERRIDE ================= */
+
+		body[data-theme="light"] {
+			--primary: #0077ff;
+			--primary-dark: #005ad1;
+			--secondary: #7b2cbf;
+			--dark: #f4f7ff;
+			--darker: #e9edff;
+			--card: rgba(255,255,255,0.75);
+			--glass: rgba(0,0,0,0.04);
+			--text: #0a0a14;
+			--text-sec: #4a4a6a;
+			--success: #00c27a;
+		}
+
+		/* Background override */
+		body[data-theme="light"] {
+			background: linear-gradient(135deg, #eef2ff 0%, #dfe6ff 100%);
+		}
+
+		/* Cards */
+		body[data-theme="light"] .card {
+			border: 1px solid rgba(0,0,0,0.08);
+			box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+		}
+
+		/* Header */
+		body[data-theme="light"] .header {
+			background: rgba(255,255,255,0.7);
+		}
+		
+		.link-wrapper { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .link-text { font-family: monospace; font-size: 0.85rem; color: #27D6F5; }
+
+		/* Bottom Nav */
+		body[data-theme="light"] .bottom-nav {
+			background: rgba(255,255,255,0.85);
+			border: 1px solid rgba(0,0,0,0.1);
+		}
+
+		/* Usage container */
+		body[data-theme="light"] .usage-container {
+			background: rgba(0,0,0,0.04);
+		}
+
+		/* Link items */
+		body[data-theme="light"] .link-item {
+			background: rgba(0,0,0,0.03);
+		}
+
+		/* Username box */
+		body[data-theme="light"] .username-box {
+			background: rgba(0,0,0,0.04);
+		}
+
+		/* ================= LIGHT MODE FIXES ================= */
+
+		/* Buttons text white in light mode */
+		body[data-theme="light"] .btn-copy,
+		body[data-theme="light"] .btn-qr,
+		body[data-theme="light"] .copy-all-btn,
+		body[data-theme="light"] .app-btn {
+			color: #ffffff !important;
+		}
+
+		/* App buttons darker background */
+		body[data-theme="light"] .app-btn {
+			background: rgba(10, 15, 30, 0.85) !important;
+			border: 1px solid rgba(0,0,0,0.2);
+		}
+
+		/* Tabs inactive darker */
+		body[data-theme="light"] .tab-btn {
+			background: rgba(10, 15, 30, 0.8);
+			border: 1px solid rgba(0,0,0,0.2);
+			color: #ffffff;
+		}
+
+		/* Tabs active fix */
+		body[data-theme="light"] .tab-btn.active {
+			background: linear-gradient(135deg, var(--primary), var(--secondary));
+			color: #ffffff;
+		}
+
+		/* Improve small text readability */
+		body[data-theme="light"] .stat-small,
+		body[data-theme="light"] .usage-label {
+			color: #444466;
+		}
+
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="float-glow"></div>
+<div class="float-glow"></div>
+
+<div class="container">
+    <header class="header">
+        <div class="logo">
+            		<button id="themeToggle" style="
+		background:transparent;
+		border:none;
+		color:var(--text);
+		font-size:18px;
+		cursor:pointer;
+		">
+		<i class="fas fa-moon"></i>
+		
+		</button>
+            <span>بی مرز|BmaarZ</span> <!--ویرایش نام برند شما-->
+        </div>
+        <div class="status-badge {% if user.status.value == 'active' %}active{% else %}expired{% endif %}">
+            <div class="dot"></div>
+            <span>{{ user.status.value | capitalize }}</span>
+        </div>
+
+
+    </header>
+
+    <div class="dashboard">
+        <!-- Account Card -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-user-circle"></i> حساب کاربری</h2>
+            <div class="username-box">{{ user.username }}</div>
+            
+            <!-- ذخیره مقادیر خام برای جاوااسکریپت و نمایش متنی برای کاربر -->
+            <div class="usage-container" 
+                 id="usageTracker" 
+                 data-used="{{ user.used_traffic }}" 
+                 data-limit="{{ user.data_limit | default(0) }}">
+                <div class="usage-label">
+                    <span>میزان مصرف کل</span>
+                    <span id="usagePercentText">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="usageFill" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="user-stats">
+                <div class="stat-box">
+                    <!-- نمایش گیگابایتی برای کاربر -->
+                    <div class="stat-big">{% if user.data_limit %}{{ (user.data_limit - user.used_traffic) | bytesformat }}{% else %}∞{% endif %}</div>
+                    <div class="stat-small">حجم باقیمانده</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-big">{{ user.used_traffic | bytesformat }}</div>
+                    <div class="stat-small">مصرف شده</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-big">{% if user.data_limit %}{{ user.data_limit | bytesformat }}{% else %}نامحدود{% endif %}</div>
+                    <div class="stat-small">سقف حجم</div>
+                </div>
+            </div>
+            <div style="margin-top:10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; text-align: center; font-size: 0.8rem; color: var(--text-sec);">
+                انقضا: {% if user.expire %}{{ user.expire | datetime }}{% else %}نامحدود{% endif %}
+            </div>
+        </div>
+
+        <!-- Links Card -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-link"></i> لینک‌های اتصال</h2>
+            {% for link in links %}
+            <div class="link-item">
+                <div class="link-wrapper"><div class="link-text">{{ link }}</div></div>
+                <button class="btn-copy" data-link="{{ link }}">کپی</button>
+                <button class="btn-qr" data-link="{{ link }}">QR</button>
+            </div>
+            {% endfor %}
+            <button class="copy-all-btn" onclick="copyAllConfigs()">کپی تمام کانفیگ‌ها</button>
+        </div>
+
+        <!-- Downloads Card -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-download"></i> دانلود کلاینت</h2>
+            <div class="tabs">
+                <button class="tab-btn active" data-platform="all">همه</button>
+                <button class="tab-btn" data-platform="android">Android</button>
+                <button class="tab-btn" data-platform="ios">iOS</button>
+                <button class="tab-btn" data-platform="windows">Windows</button>
+            </div>
+            <div class="apps-grid">
+                {% for app in apps %}
+                <div class="app-card" data-platform="{{ app.platform.value | lower }}">
+                    {% if app.icon_url %}
+                    <img src="{{ app.icon_url }}" alt="{{ app.name }}" class="app-icon">
+                    {% endif %}
+                    <div class="app-name">{{ app.name }}</div>
+                    <div class="app-actions">
+                        {% if app.download_links and app.download_links|length > 0 %}
+                        <button class="app-btn" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #000;" onclick="window.open('{{ app.download_links[0].url }}', '_blank')">دانلود</button>
+                        {% endif %}
+                        {% if app.import_url %}
+                        <button class="app-btn" style="background: rgba(255,255,255,0.1); color: #fff;" onclick="window.open('{{ app.import_url }}', '_blank')">افزودن</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation --> <!-- ویرایش مشخصات لینک های ربات , کانال و پشتیبانی --->
+<div class="bottom-nav-container">
+    <nav class="bottom-nav">
+        <a href="https://t.me/bmaarzbot" class="nav-item bot" target="_blank">
+            <i class="fab fa-telegram"></i>
+            <span>ربات</span>
+        </a>
+        <a href="https://t.me/bmaarz_channel" class="nav-item channel" target="_blank">
+            <i class="fas fa-bullhorn"></i>
+            <span>کانال رسمی</span>
+        </a>
+        <a href="https://t.me/bmaarz_supported" class="nav-item support" target="_blank">
+            <i class="fas fa-headset"></i>
+            <span>پشتیبانی</span>
+        </a>
+    </nav>
+</div>
+
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">کپی شد!</span></div>
+
+<div id="qrPopup">
+    <div class="qr-inner">
+        <button class="close-qr-btn" onclick="document.getElementById('qrPopup').style.display='none'"><i class="fas fa-times"></i></button>
+        <div id="qrcode" style="display: flex; justify-content: center;"></div>
+        <div style="margin-top:16px; color:#333; font-weight: 700; font-size: 0.9rem;">اسکن کد اتصال</div>
+    </div>
+</div>
+
+<script>
+/**
+ * تابع به‌روزرسانی نوار پیشرفت مصرف
+ * این تابع مقادیر خام عددی را از صفات دیتا دریافت کرده و محاسبات را انجام می‌دهد
+ */
+function updateUsageBar() {
+    const tracker = document.getElementById('usageTracker');
+    if (!tracker) return;
+
+    // دریافت مقادیر عددی خالص (بایت) برای محاسبات ریاضی دقیق
+    const used = parseFloat(tracker.getAttribute('data-used')) || 0;
+    const limit = parseFloat(tracker.getAttribute('data-limit')) || 0;
+    
+    const fillEl = document.getElementById('usageFill');
+    const textEl = document.getElementById('usagePercentText');
+
+    if (limit > 0) {
+        let percent = (used / limit) * 100;
+        
+        // محدود کردن درصد بین 0 تا 100
+        if (percent > 100) percent = 100;
+        if (percent < 0) percent = 0;
+        
+        // اعمال عرض به نوار با انیمیشن و تغییر متن درصد
+        fillEl.style.width = percent + '%';
+        textEl.textContent = Math.round(percent) + '%';
+        
+        // تغییر رنگ نوار در صورت مصرف بالا (اختیاری)
+        if (percent > 90) {
+            fillEl.style.background = 'linear-gradient(90deg, #ff4b2b, #ff416c)';
+        }
+    } else {
+        // برای اکانت‌های نامحدود
+        fillEl.style.width = '0%';
+        textEl.textContent = '∞';
+    }
+}
+
+/**
+ * نمایش پیام‌های اطلاع‌رسانی موقت (Toast)
+ */
+function showToastNotification(msg) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    if (!toast || !toastMsg) return;
+
+    toastMsg.textContent = msg;
+    toast.style.display = 'flex';
+    
+    // وقفه کوتاه برای اجرای انیمیشن ورود
+    setTimeout(() => toast.classList.add('show'), 50);
+    
+    // ناپدید شدن خودکار پس از 2.5 ثانیه
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.style.display = 'none', 350);
+    }, 2500);
+}
+
+/**
+ * کپی کردن تمام لینک‌های اتصال به حافظه موقت
+ */
+window.copyAllConfigs = function () {
+    const configLinks = [...document.querySelectorAll('.link-text')]
+        .map(el => el.textContent.trim())
+        .join('\n');
+        
+    if (configLinks) {
+        navigator.clipboard.writeText(configLinks).then(() => {
+            showToastNotification("تمام کانفیگ‌ها کپی شدند");
+        }).catch(() => {
+            // روش جایگزین در صورت عدم پشتیبانی مرورگر
+            const textArea = document.createElement("textarea");
+            textArea.value = configLinks;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToastNotification("تمام کانفیگ‌ها کپی شدند");
+        });
+    }
+};
+
+/**
+ * مدیریت رویدادها پس از بارگذاری کامل صفحه
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    // اجرای اولیه محاسبه نوار مصرف
+    updateUsageBar();
+
+    // مدیریت دکمه‌های کپی تکی لینک‌ها
+    document.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            const link = this.getAttribute('data-link');
+            navigator.clipboard.writeText(link).then(() => {
+                showToastNotification("لینک کپی شد");
+            });
+        };
+    });
+
+    // مدیریت باز کردن پاپ‌آپ QR Code
+    document.querySelectorAll('.btn-qr').forEach(btn => {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            const link = this.getAttribute('data-link');
+            const qrContainer = document.getElementById('qrcode');
+            if (!qrContainer) return;
+
+            qrContainer.innerHTML = ''; // پاکسازی قبلی
+            new QRCode(qrContainer, {
+                text: link,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            document.getElementById('qrPopup').style.display = 'flex';
+        };
+    });
+
+    // مدیریت تب‌های فیلتر کلاینت‌ها (سیستم‌عامل‌ها)
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const appCards = document.querySelectorAll('.app-card');
+    
+    tabButtons.forEach(tab => {
+        tab.onclick = function() {
+            const platform = this.getAttribute('data-platform');
+            
+            // تغییر وضعیت دکمه فعال
+            tabButtons.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // نمایش/مخفی کردن کارت‌ها
+            appCards.forEach(card => {
+                const cardPlatform = card.getAttribute('data-platform');
+                if (platform === 'all' || cardPlatform === platform) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+    });
+});
+
+/* ================= THEME SYSTEM ================= */
+
+function applyTheme(theme){
+    document.body.setAttribute("data-theme", theme);
+
+    const icon = document.querySelector("#themeToggle i");
+    if(icon){
+        icon.className = theme === "light"
+            ? "fas fa-sun"
+            : "fas fa-moon";
+    }
+}
+
+function initTheme(){
+    const savedTheme = localStorage.getItem("theme") || "light";
+    applyTheme(savedTheme);
+}
+
+function toggleTheme(){
+    const current = document.body.getAttribute("data-theme") || "dark";
+    const next = current === "dark" ? "light" : "dark";
+
+    localStorage.setItem("theme", next);
+    applyTheme(next);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    initTheme();
+
+    const btn = document.getElementById("themeToggle");
+    if(btn){
+        btn.addEventListener("click", toggleTheme);
+    }
+
+});
+
+</script>
+</body>
+</html>
